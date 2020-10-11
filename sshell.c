@@ -44,13 +44,31 @@ int main(void)
 
 
                 /* Parsing command */
+                
+		int file_use = 0;  //0 for no files, 1 for overwriting, 2 for appending
+		char *filename_finder;
+		filename_finder = strchr(cmd, '>');
+		if (filename_finder) {
+			++file_use;
+			*filename_finder = '\0';
+			++filename_finder;
+			if (*filename_finder == '>') {
+				++file_use;
+				*filename_finder = '\0';
+				++filename_finder;
+			}
+			while (*filename_finder == ' ') {
+				*filename_finder = '\0';
+				++filename_finder;
+			}
+		}
+		
 		char *parsed[16];
 		char *token;
 		int parse_count = 0;
 	
 		token = strtok(cmd, " ");
 		while (parse_count <= 17 && token != NULL) {
-			//printf("%s\n", token);
 			parsed[parse_count] = token;
 			token = strtok(NULL, " ");
 			++parse_count;
@@ -63,6 +81,7 @@ int main(void)
 		
 		
 		/* Builtin command */
+		
                 if (!strcmp(cmd, "exit")) {
                         fprintf(stderr, "Bye...\n");
                         break;
@@ -81,7 +100,9 @@ int main(void)
                 		fprintf(stderr, "Error: cannot cd into directory\n");
                 	continue;
                 }
+                
 		/* Execute */
+		
                 int pid = fork();
                 if (pid) {
                 	wait(&status);
