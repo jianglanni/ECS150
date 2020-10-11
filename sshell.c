@@ -30,7 +30,6 @@ int main(void)
 		memset(cmd, 0, sizeof(cmd));
                 /* Get command line */
                 fgets(cmd, CMDLINE_MAX, stdin);
-
                 /* Print command line if stdin is not provided by terminal */
                 if (!isatty(STDIN_FILENO)) {
                         printf("%s", cmd);
@@ -42,7 +41,8 @@ int main(void)
                 if (nl)
                         *nl = '\0';
 
-
+		char saved_cmd[CMDLINE_MAX];
+		strcpy(saved_cmd, cmd);
                 /* Parsing command */
                 
 		int file_use = 0;  //0 for no files, 1 for overwriting, 2 for appending
@@ -78,22 +78,14 @@ int main(void)
 			continue;
 		}
 		parsed[parse_count] = NULL;
-		
-		
+	
 		/* Builtin command */
 		
                 if (!strcmp(cmd, "exit")) {
                         fprintf(stderr, "Bye...\n");
                         break;
                 }
-                
-                if (!strcmp(parsed[0], "pwd")) {
-                	char buf[512];
-                	getcwd(buf, sizeof(buf));
-                	printf("%s\n", buf);
-                	continue;
-                }
-                
+		
                 if (!strcmp(parsed[0], "cd")) {
                 	int chd = chdir(parsed[1]);
                 	if (chd)
@@ -108,13 +100,29 @@ int main(void)
                 	wait(&status);
                 	retval = WEXITSTATUS(status);
 		} else {
+			if (file_use == 1) {
+				freopen(filename_finder, "w", stdout);
+			}
+			if (file_use == 2) {
+				freopen(filename_finder, "a+", stdout);
+			}
+			if (!strcmp(parsed[0], "pwd")) {
+                		char buf[512];
+                		getcwd(buf, sizeof(buf));
+                		fprintf(stdout, "%s\n", buf);
+                		exit(0);
+                	}
+                
+                	
 			execvp(parsed[0], parsed);
 		}
+		
 		if (pid)
-                	fprintf(stderr, "Completed '%s' [%d]\n", cmd, retval);
+                	fprintf(stderr, "Completed '%s' [%d]\n", saved_cmd, retval);
 		else {
 			exit(233);
 		}
+	
         }
 
         return EXIT_SUCCESS;
