@@ -20,6 +20,55 @@ struct parsed_str {
 	char *parsed[16];
 };
 
+void parse_filename(char *cmd, char **filename_finder, int *file_use) {
+	*filename_finder = strchr(cmd, '>');
+	if (*filename_finder) {
+		++*file_use;
+		**filename_finder = '\0';
+		++*filename_finder;
+		if (**filename_finder == '>') {
+			++*file_use;
+			**filename_finder = '\0';
+			++*filename_finder;
+		}
+		while (**filename_finder == ' ') {
+			**filename_finder = '\0';
+			++*filename_finder;
+		}
+	}
+}
+
+void redirect_to_file(char *filename_finder, int file_use) {
+	if (file_use == 1) {
+		freopen(filename_finder, "w", stdout);
+	}
+	if (file_use == 2) {
+		freopen(filename_finder, "a+", stdout);
+	}
+}
+
+void parse_command(struct parsed_str *container, int *failed_parse, char *sep_cmd) {
+	int parse_count = 0;
+	char *token;
+	token = strtok(sep_cmd, " ");
+	while (parse_count <= 16 && token != NULL) {
+		container -> parsed[parse_count] = token;
+		token = strtok(NULL, " ");
+		++parse_count;
+	}
+	if (parse_count == 16) {
+		fprintf(stderr, "Error: too many process arguments\n");
+		*failed_parse = 1;
+		return;
+	}
+	container -> parsed[parse_count] = NULL;
+	if (!parse_count) {
+		fprintf(stderr, "Error: missing command\n");
+		*failed_parse = 1;
+		return;
+	}
+}
+
 int main(void)
 {
         char cmd[CMDLINE_MAX];
@@ -47,33 +96,30 @@ int main(void)
 
 		char saved_cmd[CMDLINE_MAX];
 		strcpy(saved_cmd, cmd);
-		//strcat(cmd, " ");
-                /* Parsing command */
-                
+
+                /* Parsing file name */
 		int file_use = 0;  //0 for no files, 1 for overwriting, 2 for appending
-		char *filename_finder;
-		filename_finder = strchr(cmd, '>');
-		if (filename_finder) {
-			++file_use;
-			*filename_finder = '\0';
-			++filename_finder;
-			if (*filename_finder == '>') {
-				++file_use;
-				*filename_finder = '\0';
-				++filename_finder;
-			}
-			while (*filename_finder == ' ') {
-				*filename_finder = '\0';
-				++filename_finder;
-			}
-		}
+		char *filename_finder = "";
+		parse_filename(cmd, &filename_finder, &file_use);
 		if (file_use) {
 			if (!strlen(filename_finder)) {
 				fprintf(stderr, "Error: no output file\n");
 				continue;
-			}	
+			}
 		}
 		
+		/* Separate pipelined commands */
+		strcat(cmd, " "); 
+		int detect_empty_cmd = 0;
+		for (int i = 1; i < (int) strlen(cmd); ++i)
+			if (cmd[i-1] == '|' && cmd[i] == '|') {
+				detect_empty_cmd = 1;
+				break;
+			}
+		if (detect_empty_cmd || cmd[0] == '|') {
+			fprintf(stderr, "Error: missing command\n");
+			continue;
+		}
 		char *sep_cmd[4];
 		char *token;
 		int cmd_count = 0;
@@ -87,43 +133,24 @@ int main(void)
 			fprintf(stderr, "Error: too many pipe signs\n");
 			continue;
 		}
+		
+		/* Parse each command */
 		struct parsed_str container[4];
 		int failed_parse = 0;
-		
-		for (int ii = 0; ii < cmd_count; ++ii) {
-			int parse_count = 0;
-			token = strtok(sep_cmd[ii], " ");
-			while (parse_count <= 16 && token != NULL) {
-				container[ii].parsed[parse_count] = token;
-				token = strtok(NULL, " ");
-				++parse_count;
-			}
-			if (parse_count == 16) {
-				fprintf(stderr, "Error: too many process arguments\n");
-				failed_parse = 1;
-				break;
-			}
-			container[ii].parsed[parse_count] = NULL;
-			if (!parse_count) {
-				fprintf(stderr, "Error: missing command\n");
-				failed_parse = 1;
-				break;
-			}
-			
+		for (int i = 0; i < cmd_count; ++i) {
+			parse_command(&container[i], &failed_parse, sep_cmd[i]);
 		}
-		
 		if (failed_parse)
 			continue;
-		/* Builtin command */
-		
+
+		/* exit and cd */
                 if (!strcmp(cmd, "exit")) {
                         fprintf(stderr, "Bye...\n");
                         break;
                 }
 		
                 if (!strcmp(container[0].parsed[0], "cd")) {
-                	int chd = chdir(container[0].parsed[1]);
-                	if (chd)
+                	if (chdir(container[0].parsed[1]))
                 		fprintf(stderr, "Error: cannot cd into directory\n");
                 	continue;
                 }
@@ -139,26 +166,13 @@ int main(void)
                 		wait(&status);
                 		retval[current_command] = WEXITSTATUS(status);
 			} else {
-				/*
-				if (file_use == 1) {
-					freopen(filename_finder, "w", stdout);
-				}
-				if (file_use == 2) {
-					freopen(filename_finder, "a+", stdout);
-				}
-				*/
 				dup2(current_input_fd, STDIN_FILENO);
 				if (current_command != cmd_count - 1)
 					dup2(fd[1], STDOUT_FILENO);
 				else {
-					
-					if (file_use == 1) {
-						freopen(filename_finder, "w", stdout);
-					}
-					if (file_use == 2) {
-						freopen(filename_finder, "a+", stdout);
-					}
+					redirect_to_file(filename_finder, file_use);
 				}
+				/* pwd */
 				if (!strcmp(container[current_command].parsed[0], "pwd")) {
                 			char buf[512];
                 			getcwd(buf, sizeof(buf));
@@ -173,8 +187,6 @@ int main(void)
 			current_input_fd = fd[0];
 			++current_command;
 		}
-		
-		
 		
 		/* Finish */
 	        fprintf(stderr, "Completed '%s' ", saved_cmd);
