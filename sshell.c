@@ -69,6 +69,24 @@ void parse_command(struct parsed_str *container, int *failed_parse, char *sep_cm
 	}
 }
 
+void list_files_with_size(){
+        struct dirent *dirEnt;
+        struct stat fStruct;
+        DIR *dir = opendir(".");
+
+        if(dir == NULL){
+                fprintf(stderr,"Error: cannot open directory\n");
+                return;
+        }
+
+        while((dirEnt = readdir(dir))!=NULL){
+                stat(dirEnt->d_name,&fStruct);
+                printf("%s (%lld bytes)\n", dirEnt->d_name, (long long)fStruct.st_size);
+        }
+        return;
+}
+
+
 int main(void)
 {
         char cmd[CMDLINE_MAX];
@@ -155,6 +173,11 @@ int main(void)
                 	continue;
                 }
                 
+		if(!strcmp(container[0].parsed[0], "cd")) {
+			list_files_with_size();
+			continue;
+		}
+		
 		/* Execute */
 		int current_command = 0;
 		int current_input_fd = STDIN_FILENO;
