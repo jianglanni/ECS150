@@ -175,6 +175,7 @@ int main(void)
                 	continue;
                 }
                 
+		/* sls */
 		if(!strcmp(container[0].parsed[0], "sls")) {
 			list_files_with_size();
 			continue;
