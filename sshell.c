@@ -83,7 +83,7 @@ void list_files_with_size(){
 
         while((dirEnt = readdir(dir))!=NULL){
                 stat(dirEnt->d_name,&fStruct);
-                printf("%s (%lld bytes)\n", dirEnt->d_name, (long long)fStruct.st_size);
+                fprintf(stdout, "%s (%lld bytes)\n", dirEnt->d_name, (long long)fStruct.st_size);
         }
         return;
 }
@@ -174,12 +174,6 @@ int main(void)
                 		fprintf(stderr, "Error: cannot cd into directory\n");
                 	continue;
                 }
-                
-		/* sls */
-		if(!strcmp(container[0].parsed[0], "sls")) {
-			list_files_with_size();
-			continue;
-		}
 		
 		/* Execute */
 		int current_command = 0;
@@ -205,11 +199,17 @@ int main(void)
                 			fprintf(stdout, "%s\n", buf);
                 			exit(0);
                 		}
+                		/* sls */
+				if(!strcmp(container[0].parsed[0], "sls")) {
+					list_files_with_size();
+					exit(0);
+				}
                 		execvp(container[current_command].parsed[0], container[current_command].parsed);
 			}
 			if (!pid) {
                 		exit(233);
                 	}
+                	close(fd[1]);
 			current_input_fd = fd[0];
 			++current_command;
 		}
