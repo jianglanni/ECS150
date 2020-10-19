@@ -85,7 +85,6 @@ void list_files_with_size(){
                 stat(dirEnt->d_name,&fStruct);
                 fprintf(stdout, "%s (%lld bytes)\n", dirEnt->d_name, (long long)fStruct.st_size);
         }
-        return;
 }
 
 
@@ -200,7 +199,7 @@ int main(void)
                 			exit(0);
                 		}
                 		/* sls */
-				if(!strcmp(container[0].parsed[0], "sls")) {
+				if(!strcmp(container[current_command].parsed[0], "sls")) {
 					list_files_with_size();
 					exit(0);
 				}
