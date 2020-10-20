@@ -2,9 +2,7 @@
 	PROJECT 1
 	ECS150
 	LAN JIANG, MANAN SHAH
-	Note that we may convert all those built-in commands into function away from the loop.
 */
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,8 +40,7 @@ void parse_filename(char *cmd, char **filename_finder, int *file_use) {
 
 void redirect_to_file(char *filename_finder, int file_use) {
 	if (file_use == 1) {
-		freopen(filename_finder, "w", stdout);
-			
+		freopen(filename_finder, "w", stdout);	
 	}
 	if (file_use == 2) {
 		freopen(filename_finder, "a+", stdout);
