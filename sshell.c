@@ -43,6 +43,7 @@ void parse_filename(char *cmd, char **filename_finder, int *file_use) {
 void redirect_to_file(char *filename_finder, int file_use) {
 	if (file_use == 1) {
 		freopen(filename_finder, "w", stdout);
+			
 	}
 	if (file_use == 2) {
 		freopen(filename_finder, "a+", stdout);
@@ -58,7 +59,7 @@ void parse_command(struct parsed_str *container, int *failed_parse, char *sep_cm
 		token = strtok(NULL, " ");
 		++parse_count;
 	}
-	if (parse_count == 16) {
+	if (parse_count > 16) {
 		fprintf(stderr, "Error: too many process arguments\n");
 		*failed_parse = 1;
 		return;
@@ -83,7 +84,7 @@ void list_files_with_size(){
 
         while((dirEnt = readdir(dir))!=NULL){
                 stat(dirEnt->d_name,&fStruct);
-                fprintf(stdout, "%s (%lld bytes)\n", dirEnt->d_name, (long long)fStruct.st_size);
+                fprintf(stdout, "%s (%lld bytes)\n", dirEnt -> d_name, (long long)fStruct.st_size);
         }
 }
 
@@ -125,6 +126,20 @@ int main(void)
 				fprintf(stderr, "Error: no output file\n");
 				continue;
 			}
+
+			char *pipe_sign_seeker = strchr(filename_finder, '|');
+			if (pipe_sign_seeker) {
+				fprintf(stderr, "Error: mislocated output redirection\n");
+				continue;
+			}
+
+			int tester_fd = 0;
+			tester_fd = open(filename_finder, O_WRONLY);
+			if (tester_fd == -1) {
+				fprintf(stderr, "Error: cannot open output file\n");
+				continue;
+			}
+			close(tester_fd);
 		}
 		
 		/* Separate pipelined commands */
@@ -152,7 +167,7 @@ int main(void)
 			fprintf(stderr, "Error: too many pipe signs\n");
 			continue;
 		}
-		
+
 		/* Parse each command */
 		struct parsed_str container[4];
 		int failed_parse = 0;
@@ -165,15 +180,20 @@ int main(void)
 		/* exit and cd */
                 if (!strcmp(cmd, "exit")) {
                         fprintf(stderr, "Bye...\n");
+                        fprintf(stderr, "+ completed '%s' [0]\n", saved_cmd);
                         break;
                 }
 		
                 if (!strcmp(container[0].parsed[0], "cd")) {
-                	if (chdir(container[0].parsed[1]))
+                	if (chdir(container[0].parsed[1])) {
                 		fprintf(stderr, "Error: cannot cd into directory\n");
+                		fprintf(stderr, "+ completed '%s' [1]\n", saved_cmd);
+                	} else {
+                		fprintf(stderr, "+ completed '%s' [0]\n", saved_cmd);
+                	}
                 	continue;
                 }
-		
+
 		/* Execute */
 		int current_command = 0;
 		int current_input_fd = STDIN_FILENO;
@@ -206,15 +226,16 @@ int main(void)
                 		execvp(container[current_command].parsed[0], container[current_command].parsed);
 			}
 			if (!pid) {
-                		exit(233);
+				fprintf(stderr, "Error: command not found\n");
+                		exit(1);
                 	}
                 	close(fd[1]);
 			current_input_fd = fd[0];
 			++current_command;
 		}
-		
+
 		/* Finish */
-	        fprintf(stderr, "Completed '%s' ", saved_cmd);
+	        fprintf(stderr, "+ completed '%s' ", saved_cmd);
 	        for (int ii = 0; ii < cmd_count; ++ii)
 	                fprintf(stderr, "[%d]", retval[ii]);
 	        fprintf(stderr, "\n");
