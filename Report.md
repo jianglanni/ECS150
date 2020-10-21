@@ -34,7 +34,9 @@ destination.
 #### sls
 We use a *struct dirent* to open files in current directory and use *struct 
 stat* to keep the files' names and sizes by calling **readdir()** and
-**stat()**. Then we print data other than '.' and '..' to the destination. 
+**stat()**. Then we print data other than '.' and '..' to the destination. We 
+viewed the code from Geeks for Geeks, at 
+https://www.geeksforgeeks.org/c-program-list-files-sub-directories-directory/
 
 ### General commands
 For commands other than builtin commands, we call **execvp()** in child process 
