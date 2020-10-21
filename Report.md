@@ -26,7 +26,7 @@ We call **chdir()** to change working directory, if **chdir()** returns 1, then
 we call out an error. Otherwise, it should be successful. 
 
 #### exit
-We print "Bye..." on stderr and break the loop to terminate the shell itself.
+We print "Bye..." on *stderr* and break the loop to terminate the shell itself.
 
 #### pwd
 We call **getcwd()** to get our current working directory and print it to the 
@@ -35,12 +35,12 @@ destination.
 #### sls
 We use a *struct dirent* to open files in current directory and use *struct 
 stat* to keep the files' names and sizes by calling **readdir()** and
-**stat()**. Then we print them other than '.' and '..' to the destination. 
+**stat()**. Then we print data other than '.' and '..' to the destination. 
 
 ### General commands
 For commands other than builtin commands, we call **execvp()** in child process.
-If a child process is still running after calling **execvp()**, we call out a
-"command not found" error. 
+If a child process is still running the shell itself after calling 
+**execvp()**, we call out a "command not found" error. 
 
 ### Pipelining
 We have a loop to execute commands from the same line one by one. 
