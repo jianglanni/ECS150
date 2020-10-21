@@ -83,6 +83,9 @@ void list_files_with_size(){
 
         while((dirEnt = readdir(dir))!=NULL){
                 stat(dirEnt->d_name,&fStruct);
+		if(!strcmp(dirEnt->d_name, ".") || !strcmp(dirEnt->d_name, "..") || !strcmp(dirEnt->d_name, ".git")){
+			continue;
+		}
                 fprintf(stdout, "%s (%lld bytes)\n", dirEnt -> d_name, (long long)fStruct.st_size);
         }
 }
