@@ -37,7 +37,9 @@ stat* to keep the files' names and sizes by calling **readdir()** and
 **stat()**. Then we print data other than '.' and '..' to the destination. 
 
 ### General commands
-For commands other than builtin commands, we call **execvp()** in child process.
+For commands other than builtin commands, we call **execvp()** in child process 
+with an extra "NULL" at the end of the arguments vector. 
+
 If a child process is still running the shell itself after calling 
 **execvp()**, we call out a "command not found" error. 
 
