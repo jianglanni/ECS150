@@ -35,7 +35,7 @@ destination.
 We use a *struct dirent* to open files in current directory and use *struct 
 stat* to keep the files' names and sizes by calling **readdir()** and
 **stat()**. Then we print data other than '.' and '..' to the destination. We 
-viewed the code from Geeks for Geeks, at 
+learned the usages of the functions from Geeks for Geeks, at 
 https://www.geeksforgeeks.org/c-program-list-files-sub-directories-directory/
 
 ### General commands
