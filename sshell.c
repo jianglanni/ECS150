@@ -42,8 +42,7 @@ void parse_filename(char *cmd, char **filename_finder, int *file_use) {
 
 void redirect_to_file(char *filename_finder, int file_use) {
 	if (file_use == 1) {
-		freopen(filename_finder, "w", stdout);
-			
+		freopen(filename_finder, "w", stdout);	
 	}
 	if (file_use == 2) {
 		freopen(filename_finder, "a+", stdout);
