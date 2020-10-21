@@ -63,3 +63,9 @@ redirections, because this function will irreversibly redirect *STDOUT* to the
 files. For the cases we should overwrite the given file, we use argument "w" in 
 **freopen()**. For the cases we append output to existing contents, we use
 "a+" when calling the function. 
+
+## Testing
+We used manual testing by typing in many different commands into the shell, and 
+checked if the shell would response as our expectations. Then, we ran the 
+script to test our code so that we could find out some minor errors we missed 
+during the manual testing
