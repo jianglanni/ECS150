@@ -1,4 +1,3 @@
-12345678901234567890123456789012345678901234567890123456789012345678901234567890
 # Project 1: SIMPLE SHELL
 ## Parsing
 First, we separate the output redirection (file name) with the rest of the cmd 
