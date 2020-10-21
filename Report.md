@@ -54,8 +54,12 @@ get inputs from *STDIN*, and the last cmd will write to *STDOUT* or to the
 assigned output file. 
 
 ### Output redirection
-We call **freopen()** in the child processes to do the output redirections, 
-because this function will irreversibly redirect *STDOUT* to the files. 
-For the cases we should overwrite the given file, we use argument "w" in 
+Before redirection, we check if we can access the given file by calling 
+**open()**, if it returns -1, we call out a "cannot open output file" error.
+Otherwise, we close the file and keep going. 
+
+We call **freopen()** in the child processes to actually do the output 
+redirections, because this function will irreversibly redirect *STDOUT* to the 
+files. For the cases we should overwrite the given file, we use argument "w" in 
 **freopen()**. For the cases we append output to existing contents, we use
 "a+" when calling the function. 
