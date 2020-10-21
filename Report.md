@@ -2,19 +2,22 @@
 # Project 1: SIMPLE SHELL
 ## Parsing
 First, we separate the output redirection (file name) with the rest of the cmd 
-line by searching for ">" or ">>" in the original cmd line and replacing them
+line by searching for ">" or ">>" in the original cmd line and replacing them 
 with '\0' if they exist, then we set another pointer that points to the file 
-name. 
+name. If this very pointer points to an empty string, we call a "no output file"
+ error. If it points to a string that does not contain a legal file name, we 
+call a "mislocated output redirection" error. 
 
 Next, we separate the commands connected by pipelining sign '|' by using 
-**strtok()**.
-
-At last, we parse each command and save the arguments in its array by using
 **strtok()**. 
 
+At last, we parse each command and save the arguments in its array by using 
+**strtok()**. If there are no arguments or too many arguments, we call an 
+error. 
+
 ## Execute commands
-We use an infinite loop to keep processing incoming command lines. Commands
-except '*cd*' and '*exit*' will be executed in child processes due to potential
+We use an infinite loop to keep processing incoming command lines. Commands 
+except '*cd*' and '*exit*' will be executed in child processes due to potential 
 output redirection.
 
 ### Builtin commands
@@ -35,3 +38,13 @@ stat* to keep the files' names and sizes by calling **readdir()** and
 **stat()**. Then we print them other than '.' and '..' to the destination. 
 
 ### General commands
+For commands other than builtin commands, we call **execvp()** in child process.
+If a child process is still running after calling **execvp()**, we call out a
+"command not found" error. 
+
+### Pipelining and output redirection
+We have a loop to execute commands from the same line one by one. 
+We will set a pipe for every execution. Each execution gets input from the 
+previous cmd's pipe and output to its own pipe. Specially, The pipe of the first 
+cmd will get inputs from *STDIN*, and the pipe of the last cmd will write to 
+*STDOUT* or to the assigned output file. 
