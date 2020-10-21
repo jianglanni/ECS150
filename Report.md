@@ -42,9 +42,17 @@ For commands other than builtin commands, we call **execvp()** in child process.
 If a child process is still running after calling **execvp()**, we call out a
 "command not found" error. 
 
-### Pipelining and output redirection
+### Pipelining
 We have a loop to execute commands from the same line one by one. 
+
 We will set a pipe for every execution. Each execution gets input from the 
-previous cmd's pipe and output to its own pipe. Specially, The pipe of the first 
-cmd will get inputs from *STDIN*, and the pipe of the last cmd will write to 
-*STDOUT* or to the assigned output file. 
+previous cmd's pipe and output to its own pipe. Specially, The first cmd will 
+get inputs from *STDIN*, and the last cmd will write to *STDOUT* or to the 
+assigned output file. 
+
+### Output redirection
+We call **freopen()** in the child processes to do the output redirections, 
+because this function will irreversibly redirect *STDOUT* to the files. 
+For the cases we should overwrite the given file, we use argument "w" in 
+**freopen()**. For the cases we append output to existing contents, we use
+"a+" when calling the function. 
