@@ -2,9 +2,7 @@
 	PROJECT 1
 	ECS150
 	LAN JIANG, MANAN SHAH
-	Note that we may convert all those built-in commands into function away from the loop.
 */
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -89,7 +87,6 @@ void list_files_with_size(){
                 fprintf(stdout, "%s (%lld bytes)\n", dirEnt -> d_name, (long long)fStruct.st_size);
         }
 }
-
 
 int main(void)
 {
@@ -242,6 +239,5 @@ int main(void)
 	                fprintf(stderr, "[%d]", retval[ii]);
 	        fprintf(stderr, "\n");
         }
-
         return EXIT_SUCCESS;
 }
